@@ -620,3 +620,55 @@ else
     error_message "Ошибка при установке Git."
 fi
 
+# Клонирование репозитория в временную директорию
+TEMP_DIR=$(mktemp -d)
+
+# Клонирование репозитория EWSCP
+success_message "Клонирование репозитория EWSCP во временную директорию..."
+sudo git clone https://github.com/Alomon/ewscp.git "$TEMP_DIR" >/dev/null 2>&1
+
+# Проверка успешности клонирования
+if [ $? -eq 0 ]; then
+    success_message "Перемещение содержимого папки adminer в $USER_HOME/adminer.$DOMAIN_NAME..."
+    sudo mv "$TEMP_DIR/adminer/"* "$USER_HOME/adminer.$DOMAIN_NAME/" >/dev/null 2>&1
+else
+    error_message "Ошибка при клонировании репозитория adminer."
+    sudo rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Проверка успешности клонирования
+if [ $? -eq 0 ]; then
+    success_message "Перемещение содержимого папки phpMyAdmin в $USER_HOME/phpmyadmin.$DOMAIN_NAME..."
+    sudo mv "$TEMP_DIR/phpmyadmin/"* "$USER_HOME/phpmyadmin.$DOMAIN_NAME/" >/dev/null 2>&1
+else
+    error_message "Ошибка при клонировании репозитория phpMyAdmin."
+    sudo rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Проверка успешности клонирования
+if [ $? -eq 0 ]; then
+    success_message "Перемещение содержимого папки phpPgAdmin в $USER_HOME/phppgadmin.$DOMAIN_NAME..."
+    sudo mv "$TEMP_DIR/phppgadmin/"* "$USER_HOME/phppgadmin.$DOMAIN_NAME/" >/dev/null 2>&1
+else
+    error_message "Ошибка при клонировании репозитория phpPgAdmin."
+    sudo rm -rf "$TEMP_DIR"
+    exit 1
+fi
+
+# Удаление временной директории
+sudo rm -rf "$TEMP_DIR" >/dev/null 2>&1
+
+success_message "Все репозитории успешно клонированы."
+
+sudo chown -R $USER_NAME:$USER_NAME "$USER_HOME/.log"
+sudo chown -R $USER_NAME:$USER_NAME "$USER_HOME/$DOMAIN_NAME"
+sudo chown -R $USER_NAME:$USER_NAME "$USER_HOME/adminer.$DOMAIN_NAME"
+sudo chown -R $USER_NAME:$USER_NAME "$USER_HOME/phpmyadmin.$DOMAIN_NAME"
+sudo chown -R $USER_NAME:$USER_NAME "$USER_HOME/phppgadmin.$DOMAIN_NAME"
+sudo chmod -R 770 "$USER_HOME/.log"
+sudo chmod -R 770 "$USER_HOME/$DOMAIN_NAME"
+sudo chmod -R 770 "$USER_HOME/adminer.$DOMAIN_NAME"
+sudo chmod -R 770 "$USER_HOME/phpmyadmin.$DOMAIN_NAME"
+sudo chmod -R 770 "$USER_HOME/phppgadmin.$DOMAIN_NAME"
