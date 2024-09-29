@@ -508,7 +508,7 @@ sudo chmod -R 775 /var/opt/mssql
 
 # Запуск контейнера Microsoft SQL Server
 success_message "Запуск контейнера Microsoft SQL Server..."
-sudo docker run -e 'ACCEPT_EULA=Y' -e 'SA_PASSWORD=$ROOT_PASS' -p 1433:1433 --name MSSQLSERVER -v /var/opt/mssql:/var/opt/mssql -d mcr.microsoft.com/mssql/server:latest > /dev/null 2>&1
+sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$ROOT_PASS" -p 1433:1433 --name MSSQLSERVER -v /var/opt/mssql:/var/opt/mssql -d mcr.microsoft.com/mssql/server:latest > /dev/null 2>&1
 
 # Настройка systemd для автоматического запуска контейнера
 success_message "Настройка автоматического запуска контейнера..."
