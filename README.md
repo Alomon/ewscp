@@ -1,6 +1,3 @@
-# ewscp
-Educational web server control panel
-
 Установка на чистый Ubuntu Server 24.04
 
 ## Вызов скрипта
