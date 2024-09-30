@@ -5,11 +5,6 @@ GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
-# Проверка переменных окружения, перед выполнением скрипта
-if [[ -z "$ROOT_PASS" || -z "$USER_NAME" || -z "$USER_PASS" || -z "$DOMAIN_NAME" ]]; then
-  echo -e "${RED}Ошибка: Переменные окружения ROOT_PASS, USER_NAME, USER_PASS и DOMAIN_NAME должны быть заданы.${NC}"
-  exit 1
-fi
 
 # Проверяем, запущен ли скрипт от суперпользователя
 if [ "$EUID" -ne 0 ]; then
@@ -17,15 +12,36 @@ if [ "$EUID" -ne 0 ]; then
   exit 1
 fi
 
+
+# Проверка переменных окружения, перед выполнением скрипта
+if [[ -z "$ROOT_PASS" || -z "$USER_NAME" || -z "$USER_PASS" || -z "$DOMAIN_NAME" ]]; then
+  echo -e "${RED}Ошибка: Переменные окружения ROOT_PASS, USER_NAME, USER_PASS и DOMAIN_NAME должны быть заданы.${NC}"
+  exit 1
+fi
+
+
 # Функция для успешного вывода сообщений
 function success_message() {
   echo -e "${GREEN}$1${NC}"
 }
 
+
 # Функция для вывода ошибок
 function error_message() {
   echo -e "${RED}$1${NC}"
 }
+
+
+# Функция для экранирования специальных символов
+escape_special_chars() {
+  printf '%q' "$1"
+}
+
+
+# Экранирование паролей
+ESCAPED_ROOT_PASS=$(escape_special_chars "$ROOT_PASS")
+ESCAPED_USER_PASS=$(escape_special_chars "$USER_PASS")
+
 
 # Установка временной зоны
 success_message "Установка временной зоны на Томское время"
@@ -33,8 +49,8 @@ if sudo timedatectl set-timezone Asia/Tomsk; then
   success_message "Временная зона успешно установлена."
 else
   error_message "Ошибка установки временной зоны."
-  exit 1
 fi
+
 
 # Обновление системы
 success_message "Обновление списка пакетов..."
@@ -42,35 +58,24 @@ if sudo apt-get update > /dev/null 2>&1; then
   success_message "Список пакетов обновлен."
 else
   error_message "Ошибка обновления списка пакетов."
-  exit 1
 fi
 
+
 # Дистрибутивное обновление
-success_message "Запуск dist-upgrade..."
+success_message "Запуск дистрибутивного обновления..."
 if sudo apt-get dist-upgrade -y > /dev/null 2>&1; then
   success_message "Система успешно обновлена."
 else
   error_message "Ошибка обновления системы."
-  exit 1
 fi
 
 # Установка expect для автоматизации ввода пароля
-success_message "Установка expect..."
+success_message "Установка expect для автоматизации взаимодействия с программами, запрашивающими ввод"
 if sudo apt install -y expect > /dev/null 2>&1; then
   success_message "Expect установлен."
 else
   error_message "Ошибка установки expect."
-  exit 1
 fi
-
-# Функция для экранирования специальных символов
-escape_special_chars() {
-  printf '%q' "$1"
-}
-
-# Экранирование паролей
-ESCAPED_ROOT_PASS=$(escape_special_chars "$ROOT_PASS")
-ESCAPED_USER_PASS=$(escape_special_chars "$USER_PASS")
 
 
 # Включение учетной записи root и установка пароля
@@ -87,8 +92,8 @@ EOF
   success_message "Пароль root успешно установлен."
 else
   error_message "Expect не установлен. Установите его командой 'sudo apt install expect'."
-  exit 1
 fi
+
 
 # Установка OpenSSH Server
 success_message "Установка OpenSSH Server..."
@@ -96,8 +101,8 @@ if sudo apt install -y openssh-server > /dev/null 2>&1; then
   success_message "OpenSSH Server установлен."
 else
   error_message "Ошибка установки OpenSSH Server."
-  exit 1
 fi
+
 
 # Включение службы SSH
 success_message "Включение службы SSH..."
@@ -105,8 +110,8 @@ if sudo systemctl enable ssh > /dev/null 2>&1; then
   success_message "Служба SSH включена."
 else
   error_message "Ошибка включения службы SSH."
-  exit 1
 fi
+
 
 # Установка Midnight Commander (mc)
 success_message "Установка Midnight Commander..."
@@ -114,8 +119,8 @@ if sudo apt install -y mc > /dev/null 2>&1; then
   success_message "Midnight Commander установлен."
 else
   error_message "Ошибка установки Midnight Commander."
-  exit 1
 fi
+
 
 # Установка SAMBA
 success_message "Установка SAMBA..."
@@ -123,29 +128,25 @@ if sudo apt install -y samba > /dev/null 2>&1; then
   success_message "Samba установлена."
 else
   error_message "Ошибка установки Samba."
-  exit 1
 fi
+
 
 # Настройка SAMBA конфигурации
 success_message "Настройка SAMBA конфигурации..."
-
 # Комментирование разделов [homes], [printers] и [print$]
 sudo sed -i '/\[printers\]/,/^\[/ s/^/#/' /etc/samba/smb.conf
 sudo sed -i '/\[print\$\]/,/^\[/ s/^/#/' /etc/samba/smb.conf
 sudo sed -i '/\[homes\]/,/^\[/ s/^/#/' /etc/samba/smb.conf
-
 # Добавление строки в раздел [global]
 sudo sed -i '/^\[global\]/a \   socket options = TCP_NODELAY IPTOS_LOWDELAY' /etc/samba/smb.conf
-
 # Закомментирование строки map to guest
 sudo sed -i 's/^\(.*map to guest = bad user.*\)$/#\1/' /etc/samba/smb.conf
-
 # Проверяем, есть ли секция [homes], если нет - добавляем её в конец файла
 if ! grep -q "^\[homes\]" /etc/samba/smb.conf; then
   echo -e "[homes]\n   comment = Home Directories\n   browseable = no\n   writeable = yes\n   create mask = 0770\n   directory mask = 0770\n   valid users = %S\n   hide dot files = no" | sudo tee -a /etc/samba/smb.conf >/dev/null 2>&1 
 fi
-
 success_message "Настройка SAMBA завершена."
+
 
 # Добавление пользователя root в Samba и установка пароля
 success_message "Добавление пользователя root в Samba и установка пароля..."
@@ -277,6 +278,25 @@ success_message "Настройка PostgreSQL завершена."
 success_message "Установка Apache и mpm-itk..."
 if sudo apt-get install -y apache2 libapache2-mpm-itk >/dev/null 2>&1; then
   success_message "Apache и mpm-itk установлены."
+
+  # Включение модуля rewrite
+  success_message "Включение модуля rewrite..."
+  if sudo a2enmod rewrite >/dev/null 2>&1; then
+    success_message "Модуль rewrite включен."
+  else
+    error_message "Ошибка включения модуля rewrite."
+    exit 1
+  fi
+
+  # Перезапуск Apache для применения изменений
+  success_message "Перезапуск Apache..."
+  if sudo systemctl restart apache2 >/dev/null 2>&1; then
+    success_message "Apache перезапущен."
+  else
+    error_message "Ошибка перезапуска Apache."
+    exit 1
+  fi
+
 else
   error_message "Ошибка установки Apache и mpm-itk."
   exit 1
