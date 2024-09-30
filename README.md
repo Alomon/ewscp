@@ -3,7 +3,7 @@ Educational web server control panel
 
 Установка на чистый Ubuntu Server 24.04
 
-# Вызов скрипта
+## Вызов скрипта
 ```sh
 curl -O https://raw.githubusercontent.com/Alomon/ewscp/master/ewscp.sh
 chmod +x ewscp.sh
