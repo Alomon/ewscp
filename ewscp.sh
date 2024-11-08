@@ -558,7 +558,7 @@ rm -f composer-setup.php
 #success_message "Docker и Microsoft SQL Server успешно установлены и настроены."
 
 # Установка Docker
-success_message "Установка Microsoft SQL Server..."
+#success_message "Установка Microsoft SQL Server..."
 
 
 
@@ -580,12 +580,6 @@ sudo apt-get update > /dev/null 2>&1
 # Установка MSSQL Server
 sudo apt-get install -y mssql-server > /dev/null 2>&1
 
-# Изменение владельца и прав доступа для каталога данных MSSQL
-sudo chown -R mssql:mssql /var/opt/mssql > /dev/null 2>&1
-sudo chmod -R 700 /var/opt/mssql > /dev/null 2>&1
-sudo chown -R mssql:mssql /var/opt/mssql/log > /dev/null 2>&1
-sudo chmod -R 700 /var/opt/mssql/log > /dev/null 2>&1
-
 # Используем expect для автоматического ответа на вопросы конфигурации
 sudo expect <<EOF > /dev/null 2>&1
 spawn /opt/mssql/bin/mssql-conf setup
@@ -599,6 +593,12 @@ expect "Do you accept the license terms?"
 send "Y\r"
 expect eof
 EOF
+
+# Изменение владельца и прав доступа для каталога данных MSSQL
+sudo chown -R mssql:mssql /var/opt/mssql > /dev/null 2>&1
+sudo chmod -R 700 /var/opt/mssql > /dev/null 2>&1
+sudo chown -R mssql:mssql /var/opt/mssql/log > /dev/null 2>&1
+sudo chmod -R 700 /var/opt/mssql/log > /dev/null 2>&1
 
 # Перезапуск сервиса MSSQL Server
 sudo systemctl restart mssql-server > /dev/null 2>&1
