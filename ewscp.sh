@@ -95,22 +95,7 @@ else
 fi
 
 
-# Установка OpenSSH Server
-success_message "Установка OpenSSH Server..."
-if sudo apt install -y openssh-server > /dev/null 2>&1; then
-  success_message "OpenSSH Server установлен."
-else
-  error_message "Ошибка установки OpenSSH Server."
-fi
 
-
-# Включение службы SSH
-success_message "Включение службы SSH..."
-if sudo systemctl enable ssh > /dev/null 2>&1; then
-  success_message "Служба SSH включена."
-else
-  error_message "Ошибка включения службы SSH."
-fi
 
 
 # Установка Midnight Commander (mc)
