@@ -569,12 +569,13 @@ success_message "Установка Microsoft SQL Server..."
 
 # Установка ключей Microsoft
 curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg > /dev/null 2>&1
-curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null 2>&1
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null 2>&1
 curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | sudo tee /etc/apt/sources.list.d/mssql-server-2022.list > /dev/null 2>&1
 
 # Обновление системы и установка зависимостей
 curl -OL http://archive.ubuntu.com/ubuntu/pool/main/o/openldap/libldap-2.5-0_2.5.18+dfsg-0ubuntu0.22.04.2_amd64.deb > /dev/null 2>&1
 sudo apt-get install -y ./libldap-2.5-0_2.5.18+dfsg-0ubuntu0.22.04.2_amd64.deb > /dev/null 2>&1
+rm -f ./libldap-2.5-0_2.5.18+dfsg-0ubuntu0.22.04.2_amd64.deb > /dev/null 2>&1
 sudo apt-get update > /dev/null 2>&1
 
 # Установка MSSQL Server
@@ -583,22 +584,22 @@ sudo apt-get install -y mssql-server > /dev/null 2>&1
 # Используем expect для автоматического ответа на вопросы конфигурации
 sudo expect <<EOF > /dev/null 2>&1
 spawn /opt/mssql/bin/mssql-conf setup
-expect "Choose an edition for SQL Server:"
+expect "Enter your edition(1-10):"
 send "2\r"
-expect "Enter the password for the SQL Server system administrator (sa):"
+expect "Do you accept the license terms? [Yes/No]:"
+send "Yes\r"
+expect "Enter the SQL Server system administrator password:"
 send "$ROOT_PASS\r"
-expect "Confirm the password for the SQL Server system administrator (sa):"
+expect "Confirm the SQL Server system administrator password:"
 send "$ROOT_PASS\r"
-expect "Do you accept the license terms?"
-send "Y\r"
 expect eof
 EOF
 
 # Изменение владельца и прав доступа для каталога данных MSSQL
 sudo chown -R mssql:mssql /var/opt/mssql > /dev/null 2>&1
-sudo chmod -R 700 /var/opt/mssql > /dev/null 2>&1
+sudo chmod -R 775 /var/opt/mssql > /dev/null 2>&1
 sudo chown -R mssql:mssql /var/opt/mssql/log > /dev/null 2>&1
-sudo chmod -R 700 /var/opt/mssql/log > /dev/null 2>&1
+sudo chmod -R 775 /var/opt/mssql/log > /dev/null 2>&1
 
 # Перезапуск сервиса MSSQL Server
 sudo systemctl restart mssql-server > /dev/null 2>&1
