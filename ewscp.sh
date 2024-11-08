@@ -513,45 +513,106 @@ fi
 # Удаление установочного файла
 rm -f composer-setup.php
 
+
+
+
+
 # Установка Docker
-success_message "Установка Docker..."
-sudo apt install docker.io -y > /dev/null 2>&1
+#success_message "Установка Docker..."
+#sudo apt install docker.io -y > /dev/null 2>&1
 
 # Загрузка образа Microsoft SQL Server
-success_message "Загрузка образа Microsoft SQL Server..."
-sudo docker pull mcr.microsoft.com/mssql/server:latest
+#success_message "Загрузка образа Microsoft SQL Server..."
+#sudo docker pull mcr.microsoft.com/mssql/server:latest
 
 # Создание каталога для данных SQL Server
-sudo mkdir -p /var/opt/mssql
-sudo chown -R 10001:10001 /var/opt/mssql
-sudo chmod -R 775 /var/opt/mssql
+#sudo mkdir -p /var/opt/mssql
+#sudo chown -R 10001:10001 /var/opt/mssql
+#sudo chmod -R 775 /var/opt/mssql
 
 # Запуск контейнера Microsoft SQL Server
-success_message "Запуск контейнера Microsoft SQL Server..."
-sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$ROOT_PASS" -p 1433:1433 --name MSSQLSERVER -v /var/opt/mssql:/var/opt/mssql -d mcr.microsoft.com/mssql/server:latest > /dev/null 2>&1
+#success_message "Запуск контейнера Microsoft SQL Server..."
+#sudo docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=$ROOT_PASS" -p 1433:1433 --name MSSQLSERVER -v /var/opt/mssql:/var/opt/mssql -d mcr.microsoft.com/mssql/server:latest > /dev/null 2>&1
 
 # Настройка systemd для автоматического запуска контейнера
-success_message "Настройка автоматического запуска контейнера..."
-sudo tee /etc/systemd/system/docker-mssqlserver.service > /dev/null <<EOL
-[Unit]
-Description=Docker Container for SQL Server
-Requires=docker.service
-After=docker.service
-
-[Service]
-Restart=always
-ExecStart=/usr/bin/docker start MSSQLSERVER
-ExecStop=/usr/bin/docker stop MSSQLSERVER
-
-[Install]
-WantedBy=multi-user.target
-EOL
-
+#success_message "Настройка автоматического запуска контейнера..."
+#sudo tee /etc/systemd/system/docker-mssqlserver.service > /dev/null <<EOL
+#[Unit]
+#Description=Docker Container for SQL Server
+#Requires=docker.service
+#After=docker.service
+#
+#[Service]
+#Restart=always
+#ExecStart=/usr/bin/docker start MSSQLSERVER
+#ExecStop=/usr/bin/docker stop MSSQLSERVER
+#
+#[Install]
+#WantedBy=multi-user.target
+#EOL
+#
 # Перезагрузка systemd и включение сервиса
-sudo systemctl daemon-reload > /dev/null 2>&1
-sudo systemctl enable docker-mssqlserver.service > /dev/null 2>&1
+#sudo systemctl daemon-reload > /dev/null 2>&1
+#sudo systemctl enable docker-mssqlserver.service > /dev/null 2>&1
+#
+#success_message "Docker и Microsoft SQL Server успешно установлены и настроены."
 
-success_message "Docker и Microsoft SQL Server успешно установлены и настроены."
+# Установка Docker
+success_message "Установка Microsoft SQL Server..."
+
+
+
+
+
+# Установка MSSQL Server
+success_message "Установка Microsoft SQL Server..."
+
+# Установка ключей Microsoft
+curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | sudo gpg --dearmor -o /usr/share/keyrings/microsoft-prod.gpg > /dev/null 2>&1
+curl https://packages.microsoft.com/keys/microsoft.asc | sudo tee /etc/apt/trusted.gpg.d/microsoft.asc > /dev/null 2>&1
+curl -fsSL https://packages.microsoft.com/config/ubuntu/22.04/mssql-server-2022.list | sudo tee /etc/apt/sources.list.d/mssql-server-2022.list > /dev/null 2>&1
+
+# Обновление системы и установка зависимостей
+curl -OL http://archive.ubuntu.com/ubuntu/pool/main/o/openldap/libldap-2.5-0_2.5.18+dfsg-0ubuntu0.22.04.2_amd64.deb > /dev/null 2>&1
+sudo apt-get install -y ./libldap-2.5-0_2.5.18+dfsg-0ubuntu0.22.04.2_amd64.deb > /dev/null 2>&1
+sudo apt-get update > /dev/null 2>&1
+
+# Установка MSSQL Server
+sudo apt-get install -y mssql-server > /dev/null 2>&1
+
+# Изменение владельца и прав доступа для каталога данных MSSQL
+sudo chown -R mssql:mssql /var/opt/mssql > /dev/null 2>&1
+sudo chmod -R 700 /var/opt/mssql > /dev/null 2>&1
+sudo chown -R mssql:mssql /var/opt/mssql/log > /dev/null 2>&1
+sudo chmod -R 700 /var/opt/mssql/log > /dev/null 2>&1
+
+# Используем expect для автоматического ответа на вопросы конфигурации
+sudo expect <<EOF > /dev/null 2>&1
+spawn /opt/mssql/bin/mssql-conf setup
+expect "Choose an edition for SQL Server:"
+send "2\r"
+expect "Enter the password for the SQL Server system administrator (sa):"
+send "$ROOT_PASS\r"
+expect "Confirm the password for the SQL Server system administrator (sa):"
+send "$ROOT_PASS\r"
+expect "Do you accept the license terms?"
+send "Y\r"
+expect eof
+EOF
+
+# Перезапуск сервиса MSSQL Server
+sudo systemctl restart mssql-server > /dev/null 2>&1
+
+# Проверка успешности установки MSSQL Server
+if systemctl is-active --quiet mssql-server; then
+    success_message "MSSQL Server успешно установлен и запущен."
+else
+    error_message "Ошибка при установке MSSQL Server."
+fi
+
+
+
+
 
 # Установка Microsoft ODBC 17
 success_message "Установка Microsoft ODBC 17..."
