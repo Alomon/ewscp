@@ -583,15 +583,13 @@ sudo apt-get install -y mssql-server > /dev/null 2>&1
 
 # Используем expect для автоматического ответа на вопросы конфигурации
 sudo expect <<EOF > /dev/null 2>&1
-spawn /opt/mssql/bin/mssql-conf setup
+spawn ACCEPT_EULA=Y /opt/mssql/bin/mssql-conf setup
 expect "Enter your edition(1-10):"
 send "2\r"
-expect "Do you accept the license terms? [Yes/No]:"
-send "Yes\r"
 expect "Enter the SQL Server system administrator password:"
-send "$ROOT_PASS\r"
+send "$ESCAPED_ROOT_PASS\r"
 expect "Confirm the SQL Server system administrator password:"
-send "$ROOT_PASS\r"
+send "$ESCAPED_ROOT_PASS\r"
 expect eof
 EOF
 
