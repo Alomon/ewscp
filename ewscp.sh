@@ -356,7 +356,7 @@ success_message "Конфигурация VirtualHost успешно обнов�
 
 # Повторение для adminer, phpmyadmin, phppgadmin
 for site in adminer phpmyadmin phppgadmin; do
-  APACHE_CONF="/etc/apache2/sites-enabled/000-${site}.conf"
+  APACHE_CONF="/etc/apache2/sites-available/000-${site}.conf"
   
   sudo tee "$APACHE_CONF" > /dev/null <<EOL
 <VirtualHost *:80>
@@ -378,9 +378,9 @@ done
 
 # Включение сайтов без вывода сообщений
 sudo a2ensite 000-default.conf > /dev/null 2>&1
-sudo a2ensite 001-adminer.conf > /dev/null 2>&1
-sudo a2ensite 002-phpmyadmin.conf > /dev/null 2>&1
-sudo a2ensite 003-phppgadmin.conf > /dev/null 2>&1
+sudo a2ensite 000-adminer.conf > /dev/null 2>&1
+sudo a2ensite 000-phpmyadmin.conf > /dev/null 2>&1
+sudo a2ensite 000-phppgadmin.conf > /dev/null 2>&1
 
 # Настройка папок сервера
 success_message "Изменение настроек папок сервера..."
