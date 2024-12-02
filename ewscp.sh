@@ -356,7 +356,7 @@ success_message "Конфигурация VirtualHost успешно обнов�
 
 # Повторение для adminer, phpmyadmin, phppgadmin
 for site in adminer phpmyadmin phppgadmin; do
-  APACHE_CONF="/etc/apache2/sites-available/000-${site}.conf"
+  APACHE_CONF="/etc/apache2/sites-enabled/000-${site}.conf"
   
   sudo tee "$APACHE_CONF" > /dev/null <<EOL
 <VirtualHost *:80>
