@@ -423,18 +423,18 @@ sudo add-apt-repository ppa:ondrej/php -y > /dev/null 2>&1
 # Обновление списка пакетов
 sudo apt-get update > /dev/null
 
-# Установка PHP 8.3 и необходимых модулей
-sudo apt-get install php8.3 php8.3-cli php8.3-dev php8.3-xml php8.3-bz2 php8.3-curl php8.3-gd php8.3-imagick php8.3-intl php8.3-mbstring php8.3-mysql php8.3-pgsql php8.3-mcrypt php8.3-zip php8.3-soap php8.3-ldap libapache2-mod-php8.3 -y --allow-unauthenticated > /dev/null 2>&1
+# Установка PHP 8.4 и необходимых модулей
+sudo apt-get install php8.4 php8.4-cli php8.4-dev php8.4-xml php8.4-bz2 php8.4-curl php8.4-gd php8.4-imagick php8.4-intl php8.4-mbstring php8.4-mysql php8.4-pgsql php8.4-mcrypt php8.4-zip php8.4-soap php8.4-ldap libapache2-mod-php8.4 -y --allow-unauthenticated > /dev/null 2>&1
 
 # Проверка установки PHP
 if php -v > /dev/null 2>&1; then
-    success_message "PHP 8.3 успешно установлено."
+    success_message "PHP 8.4 успешно установлено."
 else
-    error_message "Ошибка при установке PHP 8.3."
+    error_message "Ошибка при установке PHP 8.4."
 fi
 
 # Путь к файлу php.ini
-PHP_INI="/etc/php/8.3/apache2/php.ini"
+PHP_INI="/etc/php/8.4/apache2/php.ini"
 
 # Убедимся, что у нас есть доступ к файлу
 if [ -f "$PHP_INI" ]; then
@@ -629,11 +629,11 @@ sudo pecl install pdo_sqlsrv > /dev/null 2>&1
 
 # Конфигурация драйверов PHP
 success_message "Конфигурация драйверов PHP..."
-sudo bash -c 'printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.3/mods-available/sqlsrv.ini'
-sudo bash -c 'printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.3/mods-available/pdo_sqlsrv.ini'
+sudo bash -c 'printf "; priority=20\nextension=sqlsrv.so\n" > /etc/php/8.4/mods-available/sqlsrv.ini'
+sudo bash -c 'printf "; priority=30\nextension=pdo_sqlsrv.so\n" > /etc/php/8.4/mods-available/pdo_sqlsrv.ini'
 
 # Включение модулей
-sudo phpenmod -v 8.3 sqlsrv pdo_sqlsrv > /dev/null 2>&1
+sudo phpenmod -v 8.4 sqlsrv pdo_sqlsrv > /dev/null 2>&1
 
 success_message "Microsoft ODBC 17 и драйверы PHP для Microsoft SQL Server успешно установлены."
 
